@@ -1,0 +1,39 @@
+#!/bin/dash
+bold=$(tput bold)
+normal=$(tput sgr0)
+
+#thanks pfetch guy
+while IFS=':k ' read -r key val _; do
+case $key in
+    MemTotal)
+        mem_used=$((mem_used + val))
+        mem_full=$val
+    ;;
+
+    Shmem)
+        mem_used=$((mem_used + val))
+    ;;
+
+    MemFree|Buffers|Cached|SReclaimable)
+        mem_used=$((mem_used - val))
+    ;;
+esac
+done < /proc/meminfo
+
+mem_used=$((mem_used / 1024))
+mem_full=$((mem_full / 1024))
+kernel=$(uname -r)
+pkg=$(pacman -Q | wc -l)
+aur_pkg=$(pacman -Qm | wc -l)
+ex_pkg=$(pacman -Qqe | wc -l)
+user=${USER}
+hostname=$(hostname)
+
+# Greeting
+printf " ${bold}❤$normal  Hello $(echo "$user" | sed 's/.*/\u&/') <3 ${bold}(${user}@${hostname})${normal}\n"
+# Kernel
+printf " ${bold}Kernel:${normal} ${kernel}\n"
+# Memory
+printf " ${bold}Memory:${normal} ${mem_used} MB / ${mem_full} MB\n"
+# Packages
+printf " ${bold}Packages:${normal} ${pkg} (Explicit: ${ex_pkg}, AUR: ${aur_pkg})\n\n"
